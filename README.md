@@ -30,7 +30,13 @@ DSH 内置的“快捷键”设置页与其他插件读取的是内置固定快�
 
 ## 安装
 
-在 DSH 的 **设置 → 插件管理** 里选择以下任一方式：
+从 GitHub 获取源码（或直接下载 [Releases](https://github.com/Heydo/dsh-enter-send-swap/releases) 里附带的 tgz）：
+
+```bash
+git clone https://github.com/Heydo/dsh-enter-send-swap.git
+```
+
+然后在 DSH 的 **设置 → 插件管理** 里选择以下任一方式：
 
 1. **从本地目录安装（开发用，`link:` 方式）**：选择本插件源码目录（含
    `package.json` 的那一层），DSH 会读取其中的 `dsh.bundle.patch` 与
