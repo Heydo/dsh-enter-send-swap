@@ -21,12 +21,19 @@ DSH Web 插件：交换输入框的发送 / 换行快捷键。
     走编辑器自带的换行命令。
 - 组合输入（IME）中、带 Alt/Ctrl/Cmd 修饰键、命令/引用菜单打开、
   输入框处于命令声明（非 plain）阶段时不会拦截，保持官方行为。
+- 同时把 **设置 → 快捷键** 里的固定行按键显示同步为交换后的含义
+  （`Shift+Enter` = 发送消息、`Enter` = 换行），见下节。
 
-## 已知限制
+## 设置页同步
 
-DSH 内置的“快捷键”设置页与其他插件读取的是内置固定快捷键表，
-`fixed.send = Enter` / `fixed.newline = Shift+Enter` 由官方包注册且不允许被替换，
-因此设置页与相关提示文案仍会显示旧的按键含义，实际行为以本插件为准。
+DSH 内置的“快捷键”设置页读取的是内置固定快捷键表，
+`fixed.send = Enter` / `fixed.newline = Shift+Enter` 由官方包注册且不允许被替换。
+本插件在运行时把这两条固定行的按键描述原地互换并重新发布该表，因此设置页显示与
+实际行为一致。
+
+- 这两行仍是只读固定项（DSH 不支持给固定键录制改键），只是显示值已同步。
+- 同步基于 DSH `0.2.1-rc.3` 的快捷键服务内部结构；若未来版本改了实现，插件会
+  feature-detect 失败后跳过同步，只影响设置页显示，输入框行为不受影响。
 
 ## 安装
 
@@ -66,6 +73,11 @@ git clone https://github.com/Heydo/dsh-enter-send-swap.git
   shasum -a 256 local-dsh-enter-send-swap-<version>.tgz > local-dsh-enter-send-swap-<version>.tgz.sha256
   shasum -a 256 -c local-dsh-enter-send-swap-<version>.tgz.sha256
   ```
+
+## 变更记录
+
+- **v1.1.0** — 设置页「发送消息 / 换行」的按键显示与实际行为同步。
+- **v1.0.0** — 首个版本：交换输入框的 Enter / Shift+Enter 行为。
 
 ## 许可
 

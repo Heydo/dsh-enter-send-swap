@@ -49,6 +49,84 @@ window.__ModuleLoader__.load({
         && element.getAttribute('contenteditable') === 'true';
     }
 
+    // --- Settings → Shortcuts reference sync ------------------------------
+    //
+    // The composer resolves Enter inside its bundled Lexical editor rather than
+    // through the shortcut registry, so the shipped fixed reference rows keep
+    // advertising the original mapping. That dialog renders whatever the
+    // registry publishes from `fixedCommands`, so rewriting the two shipped
+    // command objects in place and republishing the catalog keeps the
+    // reference in sync without re-registering (duplicate ids are rejected and
+    // the shipped disposers are owner-checked).
+    //
+    // This reaches into shortcut-service internals, so every field is feature
+    // detected: on a build that does not match, the reference is left alone and
+    // the composer gestures keep working.
+    const SEND_FIXED_ID = 'fixed.send';
+    const NEWLINE_FIXED_ID = 'fixed.newline';
+
+    function copyDefinition(command) {
+      return {
+        command,
+        keys: command.keys.slice(),
+        bindings: command.bindings.map((binding) => ({ ...binding })),
+      };
+    }
+
+    function applyDefinition(target, source) {
+      target.keys = source.keys.slice();
+      target.bindings = source.bindings.map((binding) => ({ ...binding }));
+    }
+
+    function syncFixedShortcutLabels(shortcuts) {
+      const registry = shortcuts === null || typeof shortcuts !== 'object'
+        ? undefined
+        : shortcuts.registry;
+      const commands = registry === null || typeof registry !== 'object'
+        ? undefined
+        : registry.fixedCommands;
+      if (!(commands instanceof Map)) return undefined;
+      if (typeof registry.refreshFixedLabels !== 'function') return undefined;
+
+      // The shipped definitions as registered by the conversation package.
+      let shipped = null;
+      let disposed = false;
+
+      const paint = () => {
+        if (disposed) return;
+        const send = commands.get(SEND_FIXED_ID);
+        const newline = commands.get(NEWLINE_FIXED_ID);
+        if (send === undefined || newline === undefined) return;
+        // A re-registration by the owning plugin replaces the objects with
+        // fresh, untouched definitions: adopt those before swapping again.
+        if (shipped !== null && shipped.send.command === send && shipped.newline.command === newline) return;
+        if (!Array.isArray(send.keys) || !Array.isArray(send.bindings)) return;
+        if (!Array.isArray(newline.keys) || !Array.isArray(newline.bindings)) return;
+        shipped = { send: copyDefinition(send), newline: copyDefinition(newline) };
+        applyDefinition(send, shipped.newline);
+        applyDefinition(newline, shipped.send);
+        registry.refreshFixedLabels();
+      };
+
+      paint();
+      const catalog = shortcuts.fixedCatalog;
+      const unsubscribe = typeof catalog === 'object' && catalog !== null
+        && typeof catalog.subscribe === 'function'
+        ? catalog.subscribe(() => paint())
+        : undefined;
+
+      return () => {
+        disposed = true;
+        if (typeof unsubscribe === 'function') unsubscribe();
+        if (shipped === null) return;
+        const send = commands.get(SEND_FIXED_ID);
+        const newline = commands.get(NEWLINE_FIXED_ID);
+        if (send === shipped.send.command) applyDefinition(send, shipped.send);
+        if (newline === shipped.newline.command) applyDefinition(newline, shipped.newline);
+        registry.refreshFixedLabels();
+      };
+    }
+
     // Re-enter the shipped gesture: the editor turns the synthetic keydown into
     // the very command the same physical key would produce (KEY_ENTER_COMMAND),
     // so submit guards and the line-break command both stay authoritative.
@@ -118,6 +196,15 @@ window.__ModuleLoader__.load({
           id: 'enter-send-swap',
           order: 50,
         }, ComposerEnterSwap));
+
+        // Mirror the swap in the built-in Settings → Shortcuts reference so the
+        // dialog advertises Shift+Enter = send and Enter = new line.
+        ctx.inject(['shortcuts'], (scope) => {
+          scope.effect(
+            () => syncFixedShortcutLabels(scope.shortcuts),
+            'dsh-enter-send-swap: fixed shortcut reference',
+          );
+        });
       },
     };
   },
