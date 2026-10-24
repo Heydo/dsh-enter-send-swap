@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Composer Enter swap">
+  <rect x="4" y="8" width="34" height="18" rx="5" fill="#e8eefc" stroke="#4b6cb7" stroke-width="2"/>
+  <path d="M12 17h14m-4-4 4 4-4 4" fill="none" stroke="#4b6cb7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="26" y="36" width="34" height="18" rx="5" fill="#4b6cb7"/>
+  <path d="M52 45H38m4-4-4 4 4 4" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,3 @@
+- insert:
+    - id: enter-send-swap
+      name: '@local/dsh-enter-send-swap'

@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# build / release artifacts
+dist/
+*.tgz
+*.sha256
+
+# logs
+*.log
